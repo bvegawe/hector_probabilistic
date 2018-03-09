@@ -1,0 +1,12 @@
+#!/bin/tcsh
+
+#SBATCH --job-name=hcal_c0
+#SBATCH -n 1
+#SBATCH -p g
+#SBATCH --time=160:00:00
+#SBATCH --mem-per-cpu=6000
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-type=END
+#SBATCH --mail-user=bvegawe2@illinois.edu
+
+Rscript hector_chain.R --chain 0 --init filename.mcmc_init
