@@ -1,0 +1,19 @@
+================================================================================
+README
+
+Original probabilistic code for BRICK written by Tony Wong and Alexander Bakker
+(https://github.com/scrim-network/BRICK, DOI:10.5194/gmd-10-2741-2017)
+Modified for Hector simple climate model
+(https://github.com/JGCRI/hector, Hartin et al., DOI:10.5194/gmd-8-939-2015) 
+by Ben Vega-Westhoff
+================================================================================
+
+calibration/
+  Includes code to calibrate the model to observational constraints using an
+  adaptive Metropolis Markov Chain Monte Carlo.
+  hector_calib_driver.R is the main driving code.
+  More info in README_calibration
+
+assessment/
+  Read in posterior calibrated parameter sets for probabilistic hindcasts
+  and projections.
