@@ -38,6 +38,10 @@ obs_constraints/	       -Contains observational constraints,
 			        both those used to run Hector and those
 			        used in its calibration (see its README)
 
+Before running, need a Hector executable:
+  -See https://github.com/JGCRI/hector/wiki/BuildHector
+   After building, in hectorwrapper.R, specify location of hector executable
+
 Perform default calibration:
   $ Rscript hector_calib_driver.R -f *output.folder*
 Other calibration options: 

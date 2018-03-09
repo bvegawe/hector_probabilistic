@@ -1,1 +1,15 @@
-calibration/posterior_sets/*
+calibration/posterior_sets/
+.ipynb_checkpoints/
+*.pbs.o*
+*.log
+*.Rapp.history
+*.DS_Store
+*.Rout
+*.so
+*.dll
+.Rhistory
+*.RData
+*.mod
+*.o
+*/obj
+*.zip

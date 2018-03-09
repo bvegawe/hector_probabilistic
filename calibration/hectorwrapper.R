@@ -14,7 +14,7 @@
 
 # Hard-coded file locations
 # ==============================================================================
-# You will likely have to change this. Either an absolute location or relative to working.dir.
+# You will have to change this. Either an absolute location or relative to working.dir.
 EXECUTABLE = "/data/keeling/a/bvegawe2/hector_github/hector/source/hector"
 # ==============================================================================
 
