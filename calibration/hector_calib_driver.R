@@ -47,7 +47,13 @@ option_list = list(
 		 metavar="character" ), 
     make_option( c("--continue")    , type="character", default=NULL       ,
 		 help = "MCMC list to continue, saved as a .RData file (default = %default)",
-		 metavar="character" ) )
+		 metavar="character" ),
+    make_option( c("-p", "--par")   , type="logical", default=TRUE         ,
+                 help = "Run parallel MCMC chains? (default= %default)",
+                 metavar="logical"),
+    make_option( c("--np")          , type="integer", default=4            ,
+                 help = "How many parallel chains? A good idea: use detectCores() in the parallel package and don't set higher than that value. (default = %default)",
+                 metavar="character" ) ) 
 
 opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
@@ -66,20 +72,14 @@ gr.mcmc            = opt$gr 		# If TRUE, perform Gelman Rubin burn-in diagnostic
 model.set          = opt$model_set 	# Set of free parameters for the calibration. Set names are found in hector_calib_params.R.
 obs.set            = opt$obs_set 	# Set of observation data sets against which to calibrate. Set names are found in hector_calib_params.R.
 continue.mcmc      = opt$continue	# RData file containing MCMC chain list to continue (we will set p0 from here)
+parallel.mcmc      = opt$par            # If FALSE, do just 1 chain (2 sequential chains if calculating GR)
+nparallel.mcmc     = opt$np             # How may parallel chains? Use detectCores() to see how many CPU cores you have.
 
 ## Set the seed (for reproducibility)
 set.seed(1234)
 
 ## Make projections? Only needed if calibrating against other projections (for emulation)
 l.project=FALSE
-
-## Skip DEoptim? Can skip if we have presaved DEoptim output from previous similar calibration
-## DEoptim takes ~10k runs for the DOECLIM parameters + offsets (S, diff, alpha, temp offset, ocheat offset)
-skip.DEoptim = FALSE
-
-## Set up MCMC stuff here
-parallel.mcmc = FALSE   # If true, run chains in parallel. Not yet implemented!
-nparallel.mcmc = 4      # If parallel.mcmc, how many parallel chains?
 
 ## Create calibration folder
 if( strsplit( calib.folder,"/" )[[1]][1] != "" ) {
@@ -201,6 +201,7 @@ ind.norm.data = data.frame( obs.ts, l.idx, u.idx)
 ##   (as long as you use a large enough vector population (at least 10*[# parameters]))
 
 #Can skip to go straight to mcmc, instead using the best values from a previous DEoptim run (see commented example below)
+if(FALSE){ #TEMPORARY
 if(is.null(continue.mcmc)){
     print( "Starting DEoptim (differential evolution optimization) to find initial parameters for the MCMC chain" )
     source('hector_DEoptim.R')
@@ -246,6 +247,7 @@ if(!is.null(continue.mcmc)){
     p0 = unconverged_chain_list[[1]][length(unconverged_chain_list[[1]][,1]),]
     print(paste0(params," ",p0))
 }
+} #TEMPORARY, SKIPPING DEoptim for testing
 ##==============================================================================
 
 ## MCMC calibration
@@ -293,19 +295,20 @@ if( parallel.mcmc ){	  #Not sure how to do this for Hector, not implemented for 
   print( paste0( "Starting ", nparallel.mcmc, " parallel MCMC chains." ) )
   amcmc.par1 = MCMC.parallel( log.post                     , niter.mcmc                      , 
 			      p0                           , n.chain = nparallel.mcmc        , 
-			      n.cpu = nparallel.mcmc       , dyn.libs='hectorwrapper.R'      ,
+			      n.cpu = nparallel.mcmc       , #dyn.libs='hectorwrapper.R'      ,
   			      scale = step.mcmc            , adapt = TRUE                    , 
 			      acc.rate = accept.mcmc       , gamma = gamma.mcmc              , 
 			      list = TRUE                  , n.start = round(0.01*niter.mcmc),
                               parnames.in = parnames       , in.hector.in = in.hector        ,
-                              sections.in = sections       , chain.str = "chainparallel"     ,
+                              sections.in = sections       , chain.str = "par"     ,
                               calib.folder = calib.folder  , forcing.in = forcing            ,
                               ini.template = ini.template  , output.vars = output.vars       ,
 			      output.components = output.components, 
                               mod.time = mod.time          , l.project = l.project           ,
                               bound.lower.in = bound.lower , bound.upper.in = bound.upper    ,
                               trends = trends              , oidx = oidx, midx = midx        , 
-                              obs = obs, obs.err = obs.err , ind.norm.data = ind.norm.data   )
+                              obs = obs, obs.err = obs.err , ind.norm.data = ind.norm.data   ,
+			      parallel = TRUE )
   t.end=proc.time() # save timing
   print(paste0(nparallel.mcmc, "parallel chains of ", niter.mcmc," runs took: ",(t.end[3]-t.beg[3])/60.," min"))
   if( nparallel.mcmc == 1 ){

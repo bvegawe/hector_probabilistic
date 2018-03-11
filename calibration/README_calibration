@@ -47,12 +47,6 @@ Perform default calibration:
 Other calibration options: 
   $ Rscript hector_calib_driver.R -h
 
-Perform calibration with parallel chains 
-(this code will need to be adapted for your cluster):
-  $ Rscript hector_calib_parallel_init.R -f *output.folder* --name *calib.name*
-Other calibration options:
-  $ Rscript hector_calib_parallel_init.R -h
-
 Add/modify free parameters of the calibration:
   -In hector_calib_params.R, add the parameter and its details to 
    the section with Hector uncertain parameters. Also add it to 
@@ -68,11 +62,8 @@ Add/modify observational constraints:
   -In obs_readData.R, read in the time series and add it to obs.all
 
 Other notes:
-  -Parallel: Parallel option in hector_calib_driver.R is not yet implemented,
-   but they are available for my cluster using our slurm batch system (ugly method).
-   $ Rscript hector_calib_parallel_init.R -f *output.folder* --name *calib.name*
-   $ sbatch *each of the .batch files created (one per chain)*
-   $ Rscript assim_chains.R -f *output.folder*
+  -Parallel: Default to 4 parallel chains, should check your system and adjust
+   (can use detectCores() in the parallel R package to check).
   -Disable Hector logs: Hector's logging can slow its overall speed by a factor
    of 2 or 3. To disable (as of 02/08/18 on the rc2.0.0 branch), on line 41
    of source/main.cpp, change the second true to a false. Then remake the 

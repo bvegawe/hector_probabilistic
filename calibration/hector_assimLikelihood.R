@@ -37,7 +37,7 @@ log.lik = function( parameters.in    , parnames.in , in.hector.in,
 		    sections.in      , chain.str   , calib.folder, 
 		    forcing.in       , ini.template, output.vars , 
 		    output.components, mod.time    , l.project   ,
-		    trends, oidx, midx, obs, obs.err, ind.norm.data)
+		    trends, oidx, midx, obs, obs.err, ind.norm.data, ...)
 {
         parvals = parameters.in
 
@@ -67,7 +67,7 @@ log.lik = function( parameters.in    , parnames.in , in.hector.in,
 				   ini.template=ini.template,
 				   output.vars=output.vars,
 				   output.components=output.components,
-				   mod.time )
+				   mod.time, ... )
 
         ## Convert model.out to match the variables/units of the observations
         model.out = convertVars ( model.out )
@@ -135,7 +135,7 @@ log.post = function(  parameters.in    , parnames.in   , in.hector.in,
 		      forcing.in       , ini.template  , output.vars , 
 		      output.components, mod.time      , l.project   , 
 		      bound.lower.in   , bound.upper.in, trends      ,
-                      oidx, midx, obs, obs.err, ind.norm.data     )
+                      oidx, midx, obs, obs.err, ind.norm.data, ...   )
 {
 
 	lpri = log.pri( parameters.in=parameters.in  ,
@@ -159,7 +159,7 @@ log.post = function(  parameters.in    , parnames.in   , in.hector.in,
                               trends=trends,
 			      oidx=oidx, midx=midx,
                               obs=obs  , obs.err=obs.err,
-                              ind.norm.data             
+                              ind.norm.data, ...             
 			   ) + lpri
   	} else {
     	lpost = -Inf

@@ -84,8 +84,13 @@ hectorwrapper = function( par.names,
 			  ini.template = "../input_templates/default_nowrite.ini", #Absolute location or relative to working.dir
                           output.vars = c( "Tgav", "heatflux" ),
 			  output.components = c( "temperature", "temperature" ), 
-			  mod.time )
+			  mod.time,
+			  parallel = FALSE )#If parallel, use process ID for file names to ensure no overwriting
 {
+    if( parallel ) { pid = Sys.getpid()
+    } else{ pid = "" }
+    print(paste0("PID string = ",pid))
+
     # Write .ini file with updated input parameters
     nparam = length( par.names )
     vardata = vector( "list" )
@@ -93,7 +98,7 @@ hectorwrapper = function( par.names,
         vardata[[i]] = list( section = par.sections[i], value = par.vals[i] )
 	names(vardata)[i] = par.names[i]
     }
-    vardata[[nparam + 1]] = list( section = "core", value = paste0( "temp", chain.str ) )
+    vardata[[nparam + 1]] = list( section = "core", value = paste0( "temp", chain.str, pid ) )
     names(vardata)[nparam+1] = "run_name"
     if ( !is.null( forcing.file ) ) { 
         vardata[[nparam + 2]] = list( section = "forcing", value = paste0( "csv:", forcing.file ) )
@@ -114,18 +119,18 @@ hectorwrapper = function( par.names,
     if( !file.exists( output_dir ) ) { system( paste0( "mkdir ", output_dir ) ) }
 
     # Save runs to a log file 
-    logfile = paste0( working.dir, "/", chain.str, "hector_runs_log.txt" )
+    logfile = paste0( working.dir, "/", chain.str, pid, "hector_runs_log.txt" )
     if( !file.exists( logfile ) ) {write( paste( par.names, collapse = " "), file=logfile ) }
     write( paste0( paste( par.vals, collapse = " " ), ' ', Sys.time() ), file=logfile, append=TRUE )
 
     # Move to working.dir and run Hector with new parameters
     original_wd = getwd()
     setwd( working.dir )
-    replace_run_hector( ini.template, vardata, chain.str )
+    replace_run_hector( ini.template, vardata, paste0( chain.str, pid ) )
     setwd( original_wd )
     
     # Read in outputs from outputstream csv
-    output = paste0( output_dir, "/outputstream_temp", chain.str, ".csv" )
+    output = paste0( output_dir, "/outputstream_temp", chain.str, pid, ".csv" )
     fout = read.csv( file = output, header = TRUE, skip=1 )
     # No spinup
     fout = fout[fout$spinup == 0, ]
@@ -143,7 +148,7 @@ hectorwrapper = function( par.names,
 
     system( paste0( "rm ", output ) )
     if( file.exists( paste0( output_dir, "/output.csv" ) ) ) {
-      system( paste0( "rm ", output_dir, "/output.csv" ) ) #also created at run time
+      system( paste0( "rm ", output_dir, "/output.csv" ), ignore.stderr = TRUE ) #also created at run time
     }
 
     return( model.output )
