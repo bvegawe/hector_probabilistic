@@ -49,7 +49,7 @@ log.lik = function( parameters.in    , parnames.in , in.hector.in,
                                             l.project=l.project , begyear       =mod.time[1],
                                             endyear  =mod.time[length(mod.time)])
             df_out = data.frame(year=mod.time,Ftot_constrain=forcing.total)
-            forcing.file = paste0( calib.folder, "/", chain.str, "temp_RF.csv" )
+            forcing.file = paste0( calib.folder, "/", chain.str, Sys.getpid(), "temp_RF.csv" )
             write.table(df_out,file=forcing.file,quote=FALSE,row.names=FALSE,col.names=TRUE,sep=",")
             parvals[match("alphatemperature",paste0(parnames.in,sections.in))] = 1 #Forcing already scaled, no need scale in Hector
 	}

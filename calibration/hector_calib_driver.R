@@ -200,8 +200,7 @@ ind.norm.data = data.frame( obs.ts, l.idx, u.idx)
 ##   These are okay, and work, but can improve using differential evolution optimization
 ##   (as long as you use a large enough vector population (at least 10*[# parameters]))
 
-#Can skip to go straight to mcmc, instead using the best values from a previous DEoptim run (see commented example below)
-if(FALSE){ #TEMPORARY
+#Could skip to go straight to mcmc, perhaps using the best values from a previous DEoptim run or the default p0 values
 if(is.null(continue.mcmc)){
     print( "Starting DEoptim (differential evolution optimization) to find initial parameters for the MCMC chain" )
     source('hector_DEoptim.R')
@@ -247,7 +246,6 @@ if(!is.null(continue.mcmc)){
     p0 = unconverged_chain_list[[1]][length(unconverged_chain_list[[1]][,1]),]
     print(paste0(params," ",p0))
 }
-} #TEMPORARY, SKIPPING DEoptim for testing
 ##==============================================================================
 
 ## MCMC calibration

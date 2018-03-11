@@ -89,7 +89,6 @@ hectorwrapper = function( par.names,
 {
     if( parallel ) { pid = Sys.getpid()
     } else{ pid = "" }
-    print(paste0("PID string = ",pid))
 
     # Write .ini file with updated input parameters
     nparam = length( par.names )
