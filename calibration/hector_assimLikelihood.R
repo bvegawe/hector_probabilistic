@@ -107,6 +107,10 @@ log.lik = function( parameters.in    , parnames.in , in.hector.in,
 	    llik = llik + llik.i # Currently, assume all likelihoods are independent! Big assumption!
         }
 
+        if( !is.null( forcing.file ) ) {
+            system( paste0( "rm ", forcing.file ) )        
+        }
+
         return(llik)
 }
 ##==============================================================================

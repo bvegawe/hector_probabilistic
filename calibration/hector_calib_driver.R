@@ -104,11 +104,12 @@ if( forcing.based ) {
 
 ## Get emissions file
 emissions.root = "obs_constraints/emissions/"
-file = ifelse( !l.project, "hindcast_emissions.csv",
+file = ifelse( !l.project & is.null(forcing), "hindcast_emissions.csv",
+       ifelse( !l.project & !is.null(forcing),"RCP26_emissions.csv", #temperature/slr components won't care about emissions in this case anyways, and this way we run as far as we have forcing data. remove this if we want to calibrate anything that depends on emissions using forcing constraints.
        ifelse( scenario == 2.6, "RCP26_emissions.csv",
        ifelse( scenario == 4.5, "RCP45_emissions.csv",
        ifelse( scenario == 6.0, "RCP6_emissions.csv" ,
-       ifelse( scenario == 8.5, "RCP85_emissions.csv")))))
+       ifelse( scenario == 8.5, "RCP85_emissions.csv"))))))
 emissions.file = paste0( getwd(), "/", emissions.root, file )
 volcanic.file = paste0( getwd(), "/", emissions.root, "volcanic_RF.csv" )
 emissions = read.csv( emissions.file, header=TRUE, skip=3 )
@@ -246,6 +247,7 @@ if(!is.null(continue.mcmc)){
     p0 = unconverged_chain_list[[1]][length(unconverged_chain_list[[1]][,1]),]
     print(paste0(params," ",p0))
 }
+
 ##==============================================================================
 
 ## MCMC calibration
@@ -308,10 +310,8 @@ if( parallel.mcmc ){	  #Not sure how to do this for Hector, not implemented for 
                               obs = obs, obs.err = obs.err , ind.norm.data = ind.norm.data   ,
 			      parallel = TRUE )
   t.end=proc.time() # save timing
-  print(paste0(nparallel.mcmc, "parallel chains of ", niter.mcmc," runs took: ",(t.end[3]-t.beg[3])/60.," min"))
-  if( nparallel.mcmc == 1 ){
-    chain1 = amcmc.par1[[1]]$samples
-  }
+  print(paste0(nparallel.mcmc, " parallel chains of ", niter.mcmc," runs took: ",(t.end[3]-t.beg[3])/60.," min"))
+  chain1 = amcmc.par1[[1]]$samples
 }
 
 ##==============================================================================
@@ -355,7 +355,7 @@ if( ( !parallel.mcmc | (nparallel.mcmc == 1) ) & gr.mcmc ){ #this section needed
   set.seed(1234)
 }
 
-## Save all of this stuff to investigate - TESTING, TEMPORARY. DELETE AFTER WE KNOW THE CODE IS RUNNING FINE
+## Save all of this stuff to investigate - Also convenient when continuing with post-processing.
 filename.saveprogress <- paste0(calib.folder,"/hector_calib_after_mcmcs.RData")
 save.image(file = filename.saveprogress)
 ##==============================================================================
@@ -517,6 +517,9 @@ post_medians = rep( NA, n.parameters )
 for (pp in 1:n.parameters){
   post_medians[pp] = median( parameters.posterior[,pp] )
 }
+
+save.image(file = filename.saveprogress)
+
 print( "Hector parameter posterior medians: " )
 print( params[in.hector] )
 print( post_medians[in.hector] ) 

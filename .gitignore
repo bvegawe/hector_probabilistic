@@ -13,3 +13,4 @@ calibration/posterior_sets/
 *.o
 */obj
 *.zip
+*.batch
