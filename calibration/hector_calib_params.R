@@ -76,8 +76,8 @@ parlist.slr_brick = list( beta0_gsic.slr_brick, V0_gsic.slr_brick, n_gsic.slr_br
 parlist.all_model = c( parlist.temperature, parlist.slr_brick )
 
 ## Additional predefined model parameter sets, called with "model_set" in param_calib_details()
-## an example: just S.temperature and diff.temperature
-parlist.sample_model = list( S.temperature, diff.temperature )
+## an example: just DOECLIM parameters: S.temperature, diff.temperature, alpha.temperature
+parlist.doeclim_model = list( S.temperature, diff.temperature, alpha.temperature )
 ## Add more sets as desired
 
 
@@ -125,9 +125,9 @@ compare.all_obs  = list( compare.Tgav_obs, compare.ocheat_obs,
                          compare.slr_gsic_obs, compare.slr_te_obs, compare.slr_gis_obs )
 
 ## Additional predefined observation parameter sets, called with "obs_set" in param_calib_details()
-## An example: just temperature and ocean heat
-parlist.sample_obs = c( parlist.Tgav_obs, parlist.ocheat_obs )
-compare.sample_obs = list( compare.Tgav_obs, compare.ocheat_obs )
+## An example: DOECLIM-related obs: just temperature and ocean heat
+parlist.doeclim_obs = c( parlist.Tgav_obs, parlist.ocheat_obs )
+compare.doeclim_obs = list( compare.Tgav_obs, compare.ocheat_obs )
 ## Add more sets as desired
 
 ##==============================================================================
