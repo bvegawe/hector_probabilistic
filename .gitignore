@@ -1,4 +1,5 @@
 calibration/posterior_sets/
+calibration/separate_calib_output/
 .ipynb_checkpoints/
 *.pbs.o*
 *.log
