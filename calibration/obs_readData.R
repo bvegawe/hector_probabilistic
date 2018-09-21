@@ -10,6 +10,7 @@
 ##
 ## Currently includes:
 ##   -Surface temperature, HadCRUT4 global means (1850-2016), Morice et al (2012)
+##   -Alternative surface temperature: GISTEMP (1880-2017), Hansen et al (2010)
 ##   -Ocean heat, 0-3000 m (1953-1996), Gouretski and Koltermann (2007)
 ##   -SLR (global means, 1880-2013), Church and White (2011)
 ##   -Glaciers and small ice caps sea level contribution, 1961-2003, NSIDC (2005)
@@ -42,7 +43,29 @@ hadcrut_sst_obs = list( midx = midx.temp, oidx = oidx.temp,
 		 obs  = obs.temp,  obs.time = obs.temp.time,
 		 obs.err = obs.temp.err, norm.lower = norm.lower,
 		 norm.upper = norm.upper )
+##==============================================================================
+# GISTEMP annual global mean surface temperature
+dat = read.csv("obs_constraints/temperature/GISTEMP_2018.csv",header=FALSE,na.strings="***",skip=4)
+obs.temp = dat[,14]
+obs.temp.time = dat[,1]
+obs.temp = obs.temp[!is.nan(obs.temp)]
+obs.temp.time = obs.temp.time[!is.nan(obs.temp)]
+#Normalize to first 20 years, I guess
+norm.lower = 1880; norm.upper = 1900
+ibeg = which(obs.temp.time==norm.lower)
+iend=which(obs.temp.time==norm.upper)
+obs.temp = obs.temp - mean(obs.temp[ibeg:iend])
 
+idx = compute_indices(obs.time=obs.temp.time, mod.time=mod.time)
+oidx.temp = idx$oidx; midx.temp = idx$midx
+
+#No errors listed. It will have to be folded into the AR1 sigma parameter.
+obs.temp.err  = rep(0, length(obs.temp))
+
+gistemp_sst_obs = list( midx = midx.temp, oidx = oidx.temp,
+                 obs  = obs.temp,  obs.time = obs.temp.time,
+                 obs.err = obs.temp.err, norm.lower = norm.lower,
+                 norm.upper = norm.upper )
 ##==============================================================================
 ## Ocean heat content
 ##==============================================================================

@@ -61,6 +61,16 @@ temperature/
     estimates, which are important for calibration of DOECLIM.
     (the same website as above also gives good explanation of what each column represents)
     (accessed on: 27 July 2016)
+
+  GISTEMP_2018.csv
+    GISTEMP data, 1880-2018 (incomplete). Normalized 1951-1980. J-D column is annual avg.
+    Cite both:
+    GISTEMP Team, 2018: GISS Surface Temperature Analysis (GISTEMP). 
+      NASA Goddard Institute for Space Studies. Dataset accessed 2018-07-03 
+      at https://data.giss.nasa.gov/gistemp/.
+    Hansen, J., R. Ruedy, M. Sato, and K. Lo, 2010: 
+      Global surface temperature change, Rev. Geophys., 48, RG4004, 
+      doi:10.1029/2010RG000345.
 ================================================================================
 slr/
   GMSL_ChurchWhite2011_yr_2015.txt
