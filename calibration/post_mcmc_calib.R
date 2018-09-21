@@ -43,7 +43,7 @@ option_list = list(
                  help="working directory w/ all calib functions (default= %default)",
                  metavar="character") , 
     make_option( c("-n", "--nensemble"), type="integer"  , 
-                 default=20000                                                     ,
+                 default=200000                                                     ,
                  help="# of draws from our posteriors (default= %default)"         ,
                  metavar="integer")   )
 
@@ -72,11 +72,10 @@ if( strsplit( calib.folder,"/" )[[1]][1] != "" ) {
 filename.saveprogress.post = paste0( calib.folder, "/hector_calib_after_rs.RData" ) 
                         #Will contain images as we run thru this code
 
-if(FALSE){ #JUST FOR TESTING, REMOVE WHEN DONE
 load( paste0 ( calib.folder, "/hector_calib_after_mcmcs.RData" ) ) #All the parameter set-up is in here
 
 ## Read calibrated Hector parameter sets
-parameters.hector = read.csv( paste0( calib.folder, "hector_calibrated_MCMC_parameters.csv" ), header=TRUE )
+parameters.hector = read.csv( paste0( calib.folder, "/hector_calibrated_MCMC_parameters.csv" ), header=TRUE )
 print( paste0( 'read ', length( parameters.hector[[1]] ), ' calibrated Hector model parameter sets' ) )
 
 ## Read calibrated DAIS parameter sets
@@ -98,46 +97,38 @@ if ( n.ensemble < n.ensemble.in ) {
 }
 
 ## Draw parameters for calibrated DAIS model
-parameters.ensemble.dais = mat.or.vec(n.ensemble , ncol(parameters.dais) )
 ind.dais=sample( seq(1,nrow(parameters.dais)), size=n.ensemble, replace=FALSE)
-for( p in 1:ncol(parameters.dais) ) {
-    for( i in 1:n.ensemble ) {
-        parameters.ensemble.dais[i,p] = parameters.dais[ind.dais[i],p]
-    }
+parameters.ensemble.dais = data.matrix(parameters.dais[ind.dais,])
     
-    sections.dais = rep( 'slr_brick', ncol(parameters.dais) )
-    in.hector.dais = rep( TRUE, ncol(parameters.dais) ) 
+sections.dais = rep( 'slr_brick', ncol(parameters.dais) )
+in.hector.dais = rep( TRUE, ncol(parameters.dais) ) 
 
-    ## It's ugly...but adding these ranges in by brute force. They are specified in the DAIS calibration file:
-    ## https://github.com/scrim-network/BRICK/blob/master/calibration/DAIS_calib_driver.R
-    bound.lower.dais = c( 0.0    , 0      ,  0.5  , 0          , 7.05 , 0.003,0.026, 0.025      , 0.6 , 735.5, 47.5, 740 , 0.00045, 0.005  , -20 )
-    bound.upper.dais = c( 1.0    , 2      ,  4.25 , 1          , 13.65, 0.015, 1.5 , 0.085      , 1.8 ,2206.5,142.5, 820 , 0.00075, 0.015  , -10 )
-    parnames.dais = c( "a_anto", "b_anto", "gamma_dais", "alpha_dais", "mu_dais", "nu_dais", 
+## It's ugly...but adding these ranges in by brute force. They are specified in the DAIS calibration file:
+## https://github.com/scrim-network/BRICK/blob/master/calibration/DAIS_calib_driver.R
+bound.lower.dais = c( 0.0    , 0      ,  0.5  , 0          , 7.05 , 0.003,0.026, 0.025      , 0.6 , 735.5, 47.5, 740 , 0.00045, 0.005  , -20 )
+bound.upper.dais = c( 1.0    , 2      ,  4.25 , 1          , 13.65, 0.015, 1.5 , 0.085      , 1.8 ,2206.5,142.5, 820 , 0.00075, 0.015  , -10 )
+parnames.dais = c( "a_anto", "b_anto", "gamma_dais", "alpha_dais", "mu_dais", "nu_dais", 
                        "P0_dais", "kappa_dais", "f0_dais", "h0_dais", "c_dais",
                        "b0_dais", "slope_dais", "lambda_dais", "Tcrit_dais" )
-}
+
 
 
 ## Draw parameters for calibrated Hector model
 print(paste('Creating possible parameter combinations for calibrated models...'))
-parameters.ensemble.hector = mat.or.vec(n.ensemble , ncol(parameters.hector) )
 ind.ensemble = sample( seq(1,nrow(parameters.hector)), size=n.ensemble, replace=FALSE)
-for( p in 1:ncol(parameters.hector) ) {
-    for( i in 1:n.ensemble ) {
-        parameters.ensemble.hector[i,p] = parameters.hector[ind.ensemble[i],p]
-    }
-}
+parameters.ensemble.hector = data.matrix(parameters.hector[ind.ensemble,])
 print(paste(' ... done creating parameter sets'))
 
 ## Add DAIS parameter values/details to those from the Hector MCMC
 parameters = cbind(parameters.ensemble.hector, parameters.ensemble.dais)
 parnames = c(parnames, parnames.dais)
-params = c(params, parnames.dais)
+params = c(params, paste0(parnames.dais,".slr_brick"))
 sections = c(sections, sections.dais)
 in.hector = c(in.hector, in.hector.dais)
 bound.lower = c( bound.lower, bound.lower.dais )
 bound.upper = c( bound.upper, bound.upper.dais )
 rownames(parameters)=NULL
+colnames(parameters)=params
 
 ## Add slr_ais and total slr as output variables
 output.vars = c(output.vars, "slr_ais", "slr")
@@ -152,8 +143,8 @@ source('forcing_total.R')
 source('convertVars.R')
 source('ar1_sim.R')
 
-## Initialize matrix to store model ensemble output
-hector.out = vector("list", n.ensemble)
+ntime = length(mod.time)
+slr_tot    = mat.or.vec(n.ensemble,length(mod.time))
 
 ## Run the sample, with a progress bar!
 print( paste0( 'Starting ', n.ensemble, ' model hindcasts' ) )
@@ -175,52 +166,40 @@ for( i in 1:n.ensemble ) {
     } else {
         forcing.file = NULL
     }
-    hector.out[[i]] = hectorwrapper( parnames[in.hector],
-                                     parvals[in.hector],
-                                     sections[in.hector],
-                                     chain.str="rs",
-                                     working.dir=calib.folder,
-                                     forcing.file=forcing.file,
-                                     ini.template=ini.template,
-                                     output.vars=output.vars,
-                                     output.components=output.components,
-                                     mod.time )
-    setTxtProgressBar( pb, i )
-}
-close(pb)
-print("Done running model hindcasts")
-save.image( file = filename.saveprogress.post )
+    hector.out = hectorwrapper( parnames[in.hector],
+                                parvals[in.hector],
+                                sections[in.hector],
+                                chain.str="rs",
+                                working.dir=calib.folder,
+                                forcing.file=forcing.file,
+                                ini.template=ini.template,
+                                output.vars=output.vars,
+                                output.components=output.components,
+                                mod.time )
 
-## Before post-calibration, need to add the modeled statistical noise back in.
-## Only using sea-level rise data, so only need to modify GSIC, GIS.
-## using the statistical parameters for AR1, AR1 and Gaussian noise, respecively
-## Do not do for AIS, because var.dais was fit to paleo data-model mismatch, not
-## representative of the current era.
+    ## Before post-calibration, need to add the modeled statistical noise back in.
+    ## Only using sea-level rise data, so only need to modify GSIC, GIS.
+    ## using the statistical parameters for AR1, AR1 and Gaussian noise, respectively
+    ## Do not do for AIS, because var.dais was fit to paleo data-model mismatch, not
+    ## representative of the current era.
 
-ntime = length(mod.time)
-slr_tot    = mat.or.vec(n.ensemble,length(mod.time))
-
-print( "Summing and adding noise to hindcast slr" )
-pb <- txtProgressBar(min=0,max=n.ensemble,initial=0,style=3)
-for( i in 1:n.ensemble ) {
-    
     #GSIC - note, obs.err for gsic is much larger than its year-to-year variability,
     #       therefore, not including it in the statistical noise, for now.
     sigma.gsic = parameters[i,match("sigmaslr_gsic_obs",paste0(parnames,sections))]
     rho.gsic   = parameters[i,match("rhoslr_gsic_obs"  ,paste0(parnames,sections))]
     err.gsic = rep(sigma.gsic,ntime)
     err.gsic[midx[["slr_gsic"]]] = sqrt( sigma.gsic^2 + obs.err[["slr_gsic"]]^2 )
-    gsic = hector.out[[i]]$slr_gsic + ar1.sim( ntime, rho.gsic, sigma.gsic )
+    gsic = hector.out$slr_gsic + ar1.sim( ntime, rho.gsic, sigma.gsic )
 
     #GIS
     sigma.gis  = parameters[i,match("sigmaslr_gis_obs",paste0(parnames,sections))]
     rho.gis    = parameters[i,match("rhoslr_gis_obs"  ,paste0(parnames,sections))]
     err.gis    = rep(sigma.gis,ntime)
     err.gis[midx[["slr_gis"]]] = sqrt( sigma.gis^2 + obs.err[["slr_gis"]]^2 )
-    gis = hector.out[[i]]$slr_gis + ar1.sim( ntime, rho.gis, err.gis )
+    gis = hector.out$slr_gis + ar1.sim( ntime, rho.gis, err.gis )
 
     #Other components of the total SLR don't have these associated errors (limited obs)
-    slr_tot[i,] = gsic + gis + hector.out[[i]]$slr_te + hector.out[[i]]$slr_ais 
+    slr_tot[i,] = gsic + gis + hector.out$slr_te + hector.out$slr_ais 
     
     #Normalize to match Church and White obs
     norm.lower = church_slr_obs$norm.lower; norm.upper = church_slr_obs$norm.upper
@@ -229,11 +208,8 @@ for( i in 1:n.ensemble ) {
     setTxtProgressBar(pb, i)  
 }
 close(pb)
-print( "Done adding up and adding noise to hindcast total slr." )
+print( "Done running hindcats and adding up and adding noise to hindcast total slr." )
 save.image( file = filename.saveprogress.post )
-} # !!!just for testing, remove this loop later
-load( paste0 ( calib.folder, "/hector_calib_after_mcmcs.RData" ) ) #!!Just for testing, remove this later   
-
 
 ## Perform rejection sampling
 source("rejection_sample_wLW.R")
@@ -284,7 +260,11 @@ for (pp in 1:n.parameters ) {
 
 ## Write post-calibrated parameters to output csv file
 filename = paste0( calib.folder, "hector_postcalibrated_parameters.csv" )
-write.table( parameters.good, file = filename, sep = ",", qmethod = "double", row.names = FALSE )
+to.file = parameters.good
+rownames(to.file) = NULL
+colnames(to.file) = params
+
+write.table( to.file, file = filename, sep = ",", qmethod = "double", row.names = FALSE )
 print( paste0( "Rejection sampling completed. ", length(ind.survive),
                " final parameter sets saved to ", filename ) )
 save.image( file = filename.saveprogress.post )
