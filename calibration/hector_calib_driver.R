@@ -30,7 +30,7 @@ library(adaptMCMC)	# Use robust adaptive Metropolis MCMC method
 option_list = list(
     make_option( c("-f", "--folder"), type="character", default=NULL       ,
 		 help = "folder for this calibration", metavar="character"),
-    make_option( c("-n", "--niter") , type="integer"  , default=5E4        ,
+    make_option( c("-n", "--niter") , type="integer"  , default=1E6        ,
 		 help = "length of each chain (default= %default)",
 	 	 metavar= "integer"),
     make_option( c("-g", "--gr")    , type="logical"  , default=TRUE       ,
@@ -53,7 +53,10 @@ option_list = list(
                  metavar="logical"),
     make_option( c("--np")          , type="integer", default=4            ,
                  help = "How many parallel chains? A good idea: use detectCores() in the parallel package and don't set higher than that value. (default = %default)",
-                 metavar="character" ) ) 
+                 metavar="character" ) 
+    make_option( c("--endyear")     , type="integer", default=NULL         ,
+                 help = "End yr of calibration, otherwise to end of observed forcings/emissions (default= %default)",
+                 metavar="integer"))
 
 opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
@@ -74,6 +77,7 @@ obs.set            = opt$obs_set 	# Set of observation data sets against which t
 continue.mcmc      = opt$continue	# RData file containing MCMC chain list to continue (we will set p0 from here)
 parallel.mcmc      = opt$par            # If FALSE, do just 1 chain (2 sequential chains if calculating GR)
 nparallel.mcmc     = opt$np             # How may parallel chains? Use detectCores() to see how many CPU cores you have.
+endyear            = opt$endyear        # What's the end year we want on our calibration (defaults to the end of forcings/emissions data)
 
 ## Set the seed (for reproducibility)
 set.seed(1234)
@@ -90,15 +94,13 @@ if( !file.exists( calib.folder ) ) { system( paste0( "mkdir ", calib.folder ) ) 
 ## Get the forcing data (before possible aerosol scaling)
 if( forcing.based ) {
     forcing.root = "obs_constraints/forcing/"
-    file = ifelse( !l.project, "forcing_hindcast.csv", #"forcing_hindcast_1850_2009.csv", #testing; dropping data before 1850
+    file = ifelse( !l.project, "forcing_hindcast.csv",#"forcing_hindcast_rcp.csv", #"forcing_hindcast_1850_2009.csv", #testing; dropping data before 1850
            ifelse( scenario == 2.6, "forcing_rcp26.csv",
   	   ifelse( scenario == 4.5, "forcing_rcp45.csv",
   	   ifelse( scenario == 6.0, "forcing_rcp6.csv" ,
   	   ifelse( scenario == 8.5, "forcing_rcp85.csv")))))
     forcing.file = paste0( getwd(), "/", forcing.root, file )
     forcing = read.csv( forcing.file, header=TRUE )
-    begyear = forcing$year[1]
-    endyear = forcing$year[length(forcing$year)]
     print( "Doing calibration of forcing-based Hector" ) 
 } else { forcing = NULL; begyear = endyear = NULL }
 
@@ -115,10 +117,11 @@ volcanic.file = paste0( getwd(), "/", emissions.root, "volcanic_RF.csv" )
 emissions = read.csv( emissions.file, header=TRUE, skip=3 )
 
 ## Set mod.time to include the forcing and/or emissions data needed to run Hector
-if(is.null(begyear)){ begyear = emissions$Date[1] 
+if(!forcing.based){ begyear = emissions$Date[1] 
 } else{ begyear = max(forcing$year[1],emissions$Date[1]) }
-if(is.null(endyear)){ endyear = emissions$Date[length(emissions$Date)] 
-} else{ endyear = min(forcing$year[length(forcing$year)],emissions$Date[length(emissions$Date)])}
+if(is.null(endyear) & !forcing.based){ endyear = emissions$Date[length(emissions$Date)] 
+} else if(is.null(endyear)){ endyear = min(forcing$year[length(forcing$year)],
+                                           emissions$Date[length(emissions$Date)])}
 mod.time = begyear:endyear
 print( paste0( "Calibration will include Hector runs from ", begyear, " to ", endyear ) )
 
@@ -260,7 +263,7 @@ if(!is.null(continue.mcmc)){
 source('hector_assimLikelihood.R')
 
 accept.mcmc = 0.234   		     # Optimal acceptance rate as # parameters->infinity (Gelman et al, 1996; Roberts et al, 1997)
-gamma.mcmc = 0.5	             # rate of adaptation (between 0.5 and 1, lower is faster adaptation)
+gamma.mcmc = 0.501	             # rate of adaptation (between 0.5 and 1, lower is faster adaptation)
 stopadapt.mcmc = round(niter.mcmc*1) # stop adapting after how long (if ever)?
 
 if( !parallel.mcmc ){
@@ -290,7 +293,7 @@ if( !parallel.mcmc ){
 }
 
 ## If you want to run 2 (or more) chains in parallel (save time, more sampling)
-if( parallel.mcmc ){	  #Not sure how to do this for Hector, not implemented for now
+if( parallel.mcmc ){
   t.beg=proc.time() # save timing (running millions of iterations so best to have SOME idea...)
   print( paste0( "Starting ", nparallel.mcmc, " parallel MCMC chains." ) )
   amcmc.par1 = MCMC.parallel( log.post                     , niter.mcmc                      , 
