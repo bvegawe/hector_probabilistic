@@ -14,6 +14,6 @@ calibration/
   hector_calib_driver.R is the main driving code.
   More info in README_calibration
 
-assessment/
+assessment/ (coming later)
   Read in posterior calibrated parameter sets for probabilistic hindcasts
   and projections.
