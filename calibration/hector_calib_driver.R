@@ -53,7 +53,7 @@ option_list = list(
                  metavar="logical"),
     make_option( c("--np")          , type="integer", default=4            ,
                  help = "How many parallel chains? A good idea: use detectCores() in the parallel package and don't set higher than that value. (default = %default)",
-                 metavar="character" ) 
+                 metavar="character" ), 
     make_option( c("--endyear")     , type="integer", default=NULL         ,
                  help = "End yr of calibration, otherwise to end of observed forcings/emissions (default= %default)",
                  metavar="integer"))
