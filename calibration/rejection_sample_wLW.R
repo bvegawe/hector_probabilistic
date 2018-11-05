@@ -24,12 +24,12 @@ rejection_sample_wLW = function(
   lw.1900 <- (-0.11/1000)*(lw.time.1900 - 1900)
   lw.err.1900 <- (0.25*(-0.06--0.16)/1000)*sqrt(lw.time.1900 - lw.time.1900[1])
   # 1971-2010: 0.12 [0.03 to 0.22]
-  lw.time.1970 <- 1970:2005 #only ran to 2005, changing for now (BRICK calib ran thru 2009)
+  lw.time.1970 <- 1970:max(max(mod.time),2010) #original BRICK calib ran thru 2009. Further from 2010 - worse approximation
   i1970 <- which(mod.time==lw.time.1970[1]):which(mod.time==lw.time.1970[length(lw.time.1970)])
   lw.1970 <- (0.12/1000)*(lw.time.1970 - lw.time.1970[1])
-  lw.err.1970 <- (0.25*(0.2-0.03)/1000)*sqrt(lw.time.1970 - lw.time.1970[1])
+  lw.err.1970 <- (0.25*(0.22-0.03)/1000)*sqrt(lw.time.1970 - lw.time.1970[1])
   # 1993-2010: 0.38 [0.26 to 0.49]
-  lw.time.1992 <- 1992:2005 #only ran thru 2005, changing for now (BRICK calib ran thru 2009)
+  lw.time.1992 <- 1992:max(max(mod.time),2010) #original BRICK calib ran thru 2009. Further from 2010 - worse approximation
   i1992 <- which(mod.time==lw.time.1992[1]):which(mod.time==lw.time.1992[length(lw.time.1992)])
   lw.1992 <- (0.38/1000)*(lw.time.1992 - lw.time.1992[1])
   lw.err.1992 <- (0.25*(0.49-0.26)/1000)*sqrt(lw.time.1992 - lw.time.1992[1])
@@ -39,9 +39,12 @@ rejection_sample_wLW = function(
   obs.sl.lw.1970 <- obs.sl[which(obs.sl.time==lw.time.1970[1]):which(obs.sl.time==lw.time.1970[length(lw.time.1970)])] - obs.sl[which(obs.sl.time==lw.time.1970[1])]
   obs.sl.lw.1992 <- obs.sl[which(obs.sl.time==lw.time.1992[1]):which(obs.sl.time==lw.time.1992[length(lw.time.1992)])] - obs.sl[which(obs.sl.time==lw.time.1992[1])]
 
-  obs.sl.lw.1900 <- obs.sl.lw.1900 - lw.1900
-  obs.sl.lw.1970 <- obs.sl.lw.1970 - lw.1970
-  obs.sl.lw.1992 <- obs.sl.lw.1992 - lw.1992
+  # if doing a perfect model experiment, assume we didn't add landwater to the simulated obs, so no need to remove
+  if(is.null(perfFile)){
+    obs.sl.lw.1900 <- obs.sl.lw.1900 - lw.1900
+    obs.sl.lw.1970 <- obs.sl.lw.1970 - lw.1970
+    obs.sl.lw.1992 <- obs.sl.lw.1992 - lw.1992
+  }
 
   obs.sl.lw.err.1900 <- sqrt(obs.sl.err[which(obs.sl.time==lw.time.1900[1]):which(obs.sl.time==lw.time.1900[length(lw.time.1900)])]^2 + lw.err.1900^2)
   obs.sl.lw.err.1970 <- sqrt(obs.sl.err[which(obs.sl.time==lw.time.1970[1]):which(obs.sl.time==lw.time.1970[length(lw.time.1970)])]^2 + lw.err.1970^2)

@@ -213,11 +213,17 @@ save.image( file = filename.saveprogress.post )
 
 ## Perform rejection sampling
 source("rejection_sample_wLW.R")
-ind.survive = rejection_sample_wLW( church_slr_obs$obs, 
-                                    church_slr_obs$obs.time, 
-                                    church_slr_obs$obs.err,
-                                    slr_tot )
-         
+if(!is.null(perfFile)){
+  ind.survive = rejection_sample_wLW( perf.all$slr$obs,
+                                      perf.all$slr$obs.time,
+                                      perf.all$slr$obs.err,
+                                      slr_tot  )
+} else {
+  ind.survive = rejection_sample_wLW( church_slr_obs$obs, 
+                                      church_slr_obs$obs.time, 
+                                      church_slr_obs$obs.err,
+                                      slr_tot )
+}         
 parameters.good = parameters[ind.survive,]
 colnames(parameters.good) = parnames
 
