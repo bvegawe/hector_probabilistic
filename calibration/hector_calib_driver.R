@@ -53,10 +53,13 @@ option_list = list(
                  metavar="logical"),
     make_option( c("--np")          , type="integer", default=4            ,
                  help = "How many parallel chains? A good idea: use detectCores() in the parallel package and don't set higher than that value. (default = %default)",
-                 metavar="character" ) 
+                 metavar="character" ), 
     make_option( c("--endyear")     , type="integer", default=NULL         ,
                  help = "End yr of calibration, otherwise to end of observed forcings/emissions (default= %default)",
-                 metavar="integer"))
+                 metavar="integer"),
+    make_option( c("--perfFile")    , type="character", default=NULL       ,
+                 help = "Override observational constraints and constrain to model output in the given .RData file, doing a perfect model experiment? If NULL, use obs. (default = %default)",
+                 metavar="character"))
 
 opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
@@ -78,7 +81,7 @@ continue.mcmc      = opt$continue	# RData file containing MCMC chain list to con
 parallel.mcmc      = opt$par            # If FALSE, do just 1 chain (2 sequential chains if calculating GR)
 nparallel.mcmc     = opt$np             # How may parallel chains? Use detectCores() to see how many CPU cores you have.
 endyear            = opt$endyear        # What's the end year we want on our calibration (defaults to the end of forcings/emissions data)
-
+perfFile           = opt$perfFile       # What's the file with the model output against which we calibrate (overriding obs). If null, calibrate against obs.
 ## Set the seed (for reproducibility)
 set.seed(1234)
 
@@ -169,6 +172,14 @@ source('convertVars.R')         # Function to convert model output to match obse
 
 ## Read in all data sets against which we will calibrate
 source('obs_readData.R')
+
+## Overwrite the above obs data if we specify model output against which to calibrate with the
+## perfFile RData file (for perfect model experiment). perf.mcmc should be in identical format to obs.all list, but with model output.
+if(!is.null(perfFile)){
+  load(perfFile)
+  obs.all = perf.mcmc
+}
+  
 ## Then gather up all the data/model indices for comparisons. use lists to avoid
 ## enormous amounts of input to the MCMC functions.
 ## Also gather actual observation/error values.
@@ -322,10 +333,27 @@ if( parallel.mcmc ){
 ## Check #1: History plots
 pdf( paste0( calib.folder, "/chain1_hector.pdf" ) )
 par(mfrow=c(3,3))
+#Only plot a max of 500 points, to keep the file size down
+chain_samples = seq(1,niter.mcmc,by=max(1,niter.mcmc/500))
 for ( pp in 1:length(parnames) ) {
-	plot( chain1[,pp], type = "l", ylab = params[pp], xlab = "Number of Runs", main = "")
+	plot( chain_samples, chain1[chain_samples,pp], ylim = c(bound.lower[pp],bound.upper[pp]), 
+              type = "l", ylab = params[pp], xlab = "Number of Runs", main = "")
 }
 dev.off()
+if( parallel.mcmc & (nparallel.mcmc > 1) ) {
+  chain_colors = palette(rainbow(nparallel.mcmc))
+  pdf( paste0(calib.folder,"/chains_hector.pdf" ) )
+  par(mfrow=c(3,3))
+  for ( pp in 1:length(parnames) ) {
+    plot( chain_samples, chain1[chain_samples,pp], ylim = c(bound.lower[pp],bound.upper[pp]),
+          type = "l", ylab = params[pp], xlab = "Number of Runs", main = "",col=chain_colors[1])
+    for( i in 2:nparallel.mcmc ) {
+      lines( chain_samples, amcmc.par1[[i]]$samples[chain_samples,pp], col = chain_colors[i])
+    }
+  }
+  dev.off()
+}
+
 
 ## Check #2: Heidelberger and Welch's convergence diagnostic:
 heidel.diag(chain1, eps=0.1, pvalue=0.05)
