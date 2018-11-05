@@ -7,9 +7,9 @@
 # Substitute a new parameter value into an input file
 subparam <- function( flines, section, parameter, newvalue ) {
     # Find 'section' and the next one after that
-    secline <- grep( paste0( "^\\[", section, "\\]$" ), flines )
+    secline <- grep( paste0( "^\\[", section, "\\]\\s*$" ), flines )
     stopifnot( length( secline ) > 0 )
-    nextsecline <- secline + grep( "^\\[[a-zA-Z0-9_]*\\]$", flines[secline+1:length(flines)] )[1]
+    nextsecline <- secline + grep( "^\\[[a-zA-Z0-9_-]*\\]\\s*$", flines[secline+1:length(flines)] )[1]
     if( length(nextsecline) == 0 ) nextsecline <- length(flines)
 
     # Find variable name occuring within the section
