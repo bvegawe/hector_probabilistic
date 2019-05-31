@@ -47,7 +47,7 @@ ocheat/
 temperature/
   HadCRUT.4.4.0.0.annual_ns_avg.txt
     Copied from BRICK.
-    HadCRUT4 lobal mean temperature anomaly data. Available at
+    HadCRUT4 global mean temperature anomaly data. Available at
     http://www.metoffice.gov.uk/hadobs/hadcrut4/data/current/download.html
     (this website also gives good explanation of what each column represents)
     Morice, C. P., J. J. Kennedy, N. A. Rayner, and P. D. Jones (2012),

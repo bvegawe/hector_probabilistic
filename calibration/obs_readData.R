@@ -139,11 +139,11 @@ nsidc_gsic_obs = list( midx = midx.gsic, oidx = oidx.gsic,
 ## trends.te = [Column 1=trend ; Column 2-3=90% window ; Column 4-5=beginning/ending year ;
 ##              Column 6-7=beginning/ending model indices for trend period]
 ## Note: IPCC trends are through 2010, but for the hindcast calibration, the
-## forcing data go through 2009.
+## forcing data go through 2009 (or perhaps 2005).
 trends.te = mat.or.vec( 2 , 7)
 
-trends.te[1,1:5] = c( 0.8/1000. , 0.5/1000. , 1.1/1000. , 1971 , 2009 )
-trends.te[2,1:5] = c( 1.1/1000. , 0.8/1000. , 1.4/1000. , 1993 , 2009 )
+trends.te[1,1:5] = c( 0.8/1000. , 0.5/1000. , 1.1/1000. , 1971 , 2010 )
+trends.te[2,1:5] = c( 1.1/1000. , 0.8/1000. , 1.4/1000. , 1993 , 2010 )
 
 ## Compute the indices for the model to compare trends
 for (i in 1:nrow(trends.te)) {
