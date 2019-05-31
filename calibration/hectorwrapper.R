@@ -14,8 +14,8 @@
 
 # Hard-coded file locations
 # ==============================================================================
-# You will have to change this. Either an absolute location or relative to working.dir.
-EXECUTABLE = "/data/keeling/a/bvegawe2/hector_github/hector/source/hector"
+# Either point to your executable or copy your executable to this directory
+EXECUTABLE = paste0(getwd(),"/hector")
 # ==============================================================================
 
 # -----------------------------------------------------------------------------
