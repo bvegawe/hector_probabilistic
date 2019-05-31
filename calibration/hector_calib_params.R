@@ -54,7 +54,7 @@ parlist.temperature = list( S.temperature, diff.temperature, alpha.temperature )
 
 ## Uncertain parameters in the slr_brick component
 ## Glaciers and small ice caps subcomponent (GSIC-MAGICC)
-beta0_gsic.slr_brick = list( param = "beta0_gsic.slr_brick", parname = "beta0_gsic", component = "slr_brick", in.hector = TRUE, in.DEoptim = TRUE, p0 = 0.00058, bound.lower = 0      , bound.upper = 0.041 , step.mcmc = 0.01 )
+beta0_gsic.slr_brick = list( param = "beta0_gsic.slr_brick", parname = "beta0_gsic", component = "slr_brick", in.hector = TRUE, in.DEoptim = TRUE, p0 = 0.00058, bound.lower = 0      , bound.upper = 0.01 , step.mcmc = 0.01 )
 V0_gsic.slr_brick    = list( param = "V0_gsic.slr_brick"   , parname = "V0_gsic"   , component = "slr_brick", in.hector = TRUE, in.DEoptim = TRUE, p0 = 0.41   , bound.lower = 0.3    , bound.upper = 0.5   , step.mcmc = 0.01 )
 n_gsic.slr_brick     = list( param = "n_gsic.slr_brick"    , parname = "n_gsic"    , component = "slr_brick", in.hector = TRUE, in.DEoptim = TRUE, p0 = 0.82   , bound.lower = 0.55   , bound.upper = 1.0   , step.mcmc = 0.1  )
 Gs0_gsic.slr_brick   = list( param = "Gs0_gsic.slr_brick"  , parname = "Gs0_gsic"  , component = "slr_brick", in.hector = TRUE, in.DEoptim = TRUE, p0 = 0.0    , bound.lower = -0.0041, bound.upper = 0.0041, step.mcmc = 0.01 )
@@ -78,6 +78,13 @@ parlist.all_model = c( parlist.temperature, parlist.slr_brick )
 ## Additional predefined model parameter sets, called with "model_set" in param_calib_details()
 ## an example: just DOECLIM parameters: S.temperature, diff.temperature, alpha.temperature
 parlist.doeclim_model = list( S.temperature, diff.temperature, alpha.temperature )
+parlist.noTE_model = list( S.temperature, diff.temperature, alpha.temperature,
+                           beta0_gsic.slr_brick, V0_gsic.slr_brick, n_gsic.slr_brick,
+                           Gs0_gsic.slr_brick, a_simple.slr_brick, b_simple.slr_brick,
+                           alpha_simple.slr_brick, beta_simple.slr_brick, V0_simple.slr_brick )
+parlist.onlyTE_model = list( S.temperature, diff.temperature, alpha.temperature,
+                             a_tee.slr_brick ) 
+parlist.onlyT_model = list( S.temperature, diff.temperature, alpha.temperature)
 ## Add more sets as desired
 
 
@@ -128,6 +135,29 @@ compare.all_obs  = list( compare.Tgav_obs, compare.ocheat_obs,
 ## An example: DOECLIM-related obs: just temperature and ocean heat
 parlist.doeclim_obs = c( parlist.Tgav_obs, parlist.ocheat_obs )
 compare.doeclim_obs = list( compare.Tgav_obs, compare.ocheat_obs )
+
+parlist.noTE_obs = c( parlist.Tgav_obs, parlist.ocheat_obs,
+                      parlist.slr_gsic_obs, parlist.slr_gis_obs )
+compare.noTE_obs = list( compare.Tgav_obs, compare.ocheat_obs,
+                         compare.slr_gsic_obs, compare.slr_gis_obs )
+
+parlist.onlyTE_obs = c( parlist.Tgav_obs, parlist.ocheat_obs )
+compare.onlyTE_obs = list( compare.Tgav_obs, compare.ocheat_obs,
+                           compare.slr_te_obs )
+
+#Everything but ocean heat observatinal constraints
+parlist.noOcheat_obs = c( parlist.Tgav_obs, parlist.slr_gsic_obs, 
+                          parlist.slr_gis_obs )
+compare.noOcheat_obs = list( compare.Tgav_obs, compare.slr_gsic_obs,
+                             compare.slr_te_obs, compare.slr_gis_obs ) 
+
+#Only temperature and thermosteric slr
+parlist.doeclimTE_obs = c( parlist.Tgav_obs )
+compare.doeclimTE_obs = list( compare.Tgav_obs, compare.slr_te_obs )
+
+#Only temperature
+parlist.onlyT_obs = c( parlist.Tgav_obs )
+compare.onlyT_obs = list( compare.Tgav_obs )
 ## Add more sets as desired
 
 ##==============================================================================
