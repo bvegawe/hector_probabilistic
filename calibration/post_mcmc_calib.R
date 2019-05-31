@@ -130,9 +130,21 @@ bound.upper = c( bound.upper, bound.upper.dais )
 rownames(parameters)=NULL
 colnames(parameters)=params
 
-## Add slr_ais and total slr as output variables
-output.vars = c(output.vars, "slr_ais", "slr")
-output.components = c(output.components, "slr_brick", "slr_brick")
+## Add necessary slr components if not part of the original calibration
+output.vars.orig = output.vars
+output.components.orig = output.components
+slr_vars = c("slr_gis","slr_gsic","slr_te","slr_ais","slr")
+slr_components = c("slr_brick","slr_brick","slr_brick","slr_brick","slr_brick")
+for( var in slr_vars){
+  if( !(var %in% output.vars) ){
+    output.vars = c(output.vars,var)
+  }
+}
+for( comp in slr_components){
+  if( !(comp %in% output.components) ){
+    output.components = c(output.components,comp)
+  }
+}
 
 ## Prepare for hindcasts
 original.wd = getwd()
