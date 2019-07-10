@@ -85,7 +85,7 @@ minimize_residuals_hector = function(	parameters.in, parnames.in , in.hector.in 
         }
     }
     if(is.nan(err.sum)) err.sum=Inf
-    
+
     return(err.sum)
 }
 

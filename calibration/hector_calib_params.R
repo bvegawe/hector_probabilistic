@@ -131,6 +131,14 @@ parlist.all_obs = c( parlist.Tgav_obs, parlist.ocheat_obs,
 compare.all_obs  = list( compare.Tgav_obs, compare.ocheat_obs, 
                          compare.slr_gsic_obs, compare.slr_te_obs, compare.slr_gis_obs )
 
+#Everything but ocean heat observational constraints. 
+#(this avoids double counting of ocean heat info from thermal expansion and ocean heat)
+#  !!!Always update this as well because it's the default
+parlist.noOcheat_obs = c( parlist.Tgav_obs, parlist.slr_gsic_obs,
+                          parlist.slr_gis_obs )
+compare.noOcheat_obs = list( compare.Tgav_obs, compare.slr_gsic_obs,
+                             compare.slr_te_obs, compare.slr_gis_obs )
+
 ## Additional predefined observation parameter sets, called with "obs_set" in param_calib_details()
 ## An example: DOECLIM-related obs: just temperature and ocean heat
 parlist.doeclim_obs = c( parlist.Tgav_obs, parlist.ocheat_obs )
@@ -144,12 +152,6 @@ compare.noTE_obs = list( compare.Tgav_obs, compare.ocheat_obs,
 parlist.onlyTE_obs = c( parlist.Tgav_obs, parlist.ocheat_obs )
 compare.onlyTE_obs = list( compare.Tgav_obs, compare.ocheat_obs,
                            compare.slr_te_obs )
-
-#Everything but ocean heat observatinal constraints
-parlist.noOcheat_obs = c( parlist.Tgav_obs, parlist.slr_gsic_obs, 
-                          parlist.slr_gis_obs )
-compare.noOcheat_obs = list( compare.Tgav_obs, compare.slr_gsic_obs,
-                             compare.slr_te_obs, compare.slr_gis_obs ) 
 
 #Only temperature and thermosteric slr
 parlist.doeclimTE_obs = c( parlist.Tgav_obs )
@@ -169,7 +171,7 @@ param_calib_details = function( model_params = NULL,     # Model parameters to c
                                 model_components = NULL, # Model components to calibrate
 				model_set = "all_model", # Predefined set of model parameters to calibrate (defined above)
                                 obs_ts = NULL,           # Observation time series against which to calibrate
-				obs_set = "all_obs" )    # Predefined set of observations against which to calibrate (defined above)
+				obs_set = "noOcheat_obs" )    # Predefined set of observations against which to calibrate (defined above)
 {
     # Retrieve model parameter details
     if ( !is.null( model_params ) ) {
